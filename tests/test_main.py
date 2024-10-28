@@ -32,3 +32,53 @@ def test_add_sheep():
     # Verify that the sheep was actually added to the database by retrieving the new sheep by ID.
     get_response = client.get(f"/sheep/{new_sheep_data['id']}")
     assert get_response.status_code == 200
+
+
+def test_delete_sheep():
+    sheep_data = {
+        "id": 8,
+        "name": "Bobby",
+        "breed": "Gotland",
+        "sex": "ram"
+    }
+    client.post("/sheep", json=sheep_data)
+
+    response = client.delete(f"/sheep/{sheep_data['id']}")
+    assert response.status_code == 204
+
+    get_response = client.delete(f"/sheep/{sheep_data['id']}")
+    assert get_response.status_code == 404
+
+
+def test_update_sheep():
+    sheep_data = {
+        "id": 9,
+        "name": "Luna",
+        "breed": "Gotland",
+        "sex": "ewe"
+    }
+    client.post("/sheep", json=sheep_data)
+
+    updated_data = {
+        "id": 9,
+        "name": "Luna",
+        "breed": "Gotland",
+        "sex": "ewe"
+    }
+    response = client.put(f"/sheep/{sheep_data['id']}", json=updated_data)
+    assert response.status_code == 200
+    assert response.json() == updated_data
+
+    get_response = client.get(f"/sheep/{updated_data['id']}")
+    assert get_response.status_code == 200
+    assert get_response.json() == updated_data
+
+
+def test_read_all_sheep():
+    client.post("/sheep", json={"id": 10, "name": "Max", "breed": "Suffolk", "sex": "ram"})
+    client.post("/sheep", json={"id": 11, "name": "Bella", "breed": "Suffolk", "sex": "ewe"})
+
+    response = client.get("/sheep")
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+    assert len(response.json()) >= 2  # Ensure at least two sheep are returned
